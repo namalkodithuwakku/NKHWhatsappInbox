@@ -15,6 +15,7 @@ type PropertyRow = {
 type ContactInput = {
   id?: string;
   phone: string;
+  name_prefix?: string;
   contact_name?: string;
   job_position?: string;
   is_active?: boolean;
@@ -88,6 +89,7 @@ export async function POST(request: NextRequest) {
           wa_id: contact.wa_id,
           phone: `+${contact.wa_id}`,
           property_id: property.id,
+          name_prefix: String(contact.name_prefix ?? "").trim() || null,
           contact_name: String(contact.contact_name ?? "").trim() || null,
           profile_name: String(contact.contact_name ?? "").trim() || null,
           job_position: String(contact.job_position ?? "").trim() || null,

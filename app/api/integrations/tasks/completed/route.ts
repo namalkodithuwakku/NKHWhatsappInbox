@@ -11,6 +11,7 @@ type TaskMessage = {
   conversation?: {
     contact?: {
       wa_id?: string;
+      name_prefix?: string | null;
       contact_name?: string | null;
       profile_name?: string | null;
       property_id?: string | null;
@@ -34,21 +35,23 @@ function completionText(input: {
   name: string;
   language: string;
   subject: string;
+  completionNote: string;
 }) {
   const name = input.name || "team";
   const subject = input.subject || "your request";
+  const result = input.completionNote || subject;
   const language = input.language.toLowerCase();
 
   if (language === "singlish") {
-    return `Hello ${name}, oyage request eka ape team eka complete kara: ${subject}.`;
+    return `Hello ${name}, oyage request eka ape team eka complete kara: ${result}.`;
   }
   if (language === "sinhala") {
-    return `ආයුබෝවන් ${name}, ඔබගේ ඉල්ලීම අපගේ කණ්ඩායම විසින් සම්පූර්ණ කර ඇත: ${subject}.`;
+    return `ආයුබෝවන් ${name}, ඔබගේ ඉල්ලීම අපගේ කණ්ඩායම විසින් සම්පූර්ණ කර ඇත: ${result}.`;
   }
   if (language === "tamil") {
-    return `வணக்கம் ${name}, உங்கள் கோரிக்கை எங்கள் குழுவால் நிறைவு செய்யப்பட்டது: ${subject}.`;
+    return `வணக்கம் ${name}, உங்கள் கோரிக்கை எங்கள் குழுவால் நிறைவு செய்யப்பட்டது: ${result}.`;
   }
-  return `Hello ${name}, your request has been completed by our team: ${subject}.`;
+  return `Hello ${name}, your request has been completed by our team: ${result}.`;
 }
 
 async function sendWhatsAppCompletion(input: {
@@ -106,13 +109,14 @@ export async function POST(request: NextRequest) {
   const body = await request.json();
   const taskId = String(body.taskId || "").trim();
   const status = String(body.status || "").trim().toLowerCase();
+  const completionNote = String(body.completionNote || "").trim();
   if (!taskId || !["done", "completed"].includes(status)) {
     return NextResponse.json({ error: "A completed task ID is required" }, { status: 400 });
   }
 
   try {
     const messages = await supabaseRest<TaskMessage[]>(
-      `wa_messages?ai_task_id=eq.${encodeURIComponent(taskId)}&direction=eq.incoming&select=id,conversation_id,ai_task_payload,conversation:wa_conversations(contact:wa_contacts(wa_id,contact_name,profile_name,property_id))&limit=1`,
+      `wa_messages?ai_task_id=eq.${encodeURIComponent(taskId)}&direction=eq.incoming&select=id,conversation_id,ai_task_payload,conversation:wa_conversations(contact:wa_contacts(wa_id,name_prefix,contact_name,profile_name,property_id))&limit=1`,
     );
     const message = messages[0];
     if (!message) return NextResponse.json({ sent: false, skipped: true, reason: "Task is not linked to an Inbox message" });
@@ -139,9 +143,10 @@ export async function POST(request: NextRequest) {
     }
 
     const text = completionText({
-      name: String(contact.contact_name || contact.profile_name || "team").trim(),
+      name: `${contact.name_prefix || ""} ${contact.contact_name || contact.profile_name || "team"}`.trim(),
       language,
       subject: String(message.ai_task_payload?.decision?.subject || "your request").trim(),
+      completionNote,
     });
     const replyMessageId = await sendWhatsAppCompletion({
       conversationId: message.conversation_id,
