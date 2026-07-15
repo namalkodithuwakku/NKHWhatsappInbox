@@ -1,10 +1,12 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { createHmac, timingSafeEqual } from "node:crypto";
-import { NextRequest, NextResponse } from "next/server";
+import { after, NextRequest, NextResponse } from "next/server";
 import { supabaseRest } from "@/lib/supabase-server";
+import { processMessageForTask } from "@/lib/ai-task-creator";
 
-type ContactRow = { id: string; wa_id: string; phone: string; profile_name?: string | null; property_name?: string | null };
+type ContactRow = { id: string; wa_id: string; phone: string; profile_name?: string | null; property_name?: string | null; property_id?: string | null; contact_name?: string | null; job_position?: string | null; is_active?: boolean | null };
 type ConversationRow = { id: string; unread_count: number };
+type StoredMessageRow = { id: string };
 
 export async function GET(request: NextRequest) {
   const query = request.nextUrl.searchParams;
@@ -66,9 +68,9 @@ async function processIncoming(value: Record<string, any>) {
     const conversation = await getConversation(contact.id);
     const timestamp = message.timestamp ? new Date(Number(message.timestamp) * 1000) : new Date();
     const body = messageBody(message);
-    await supabaseRest("wa_messages?on_conflict=meta_message_id", {
+    const storedMessages = await supabaseRest<StoredMessageRow[]>("wa_messages?on_conflict=meta_message_id", {
       method: "POST",
-      headers: { Prefer: "resolution=ignore-duplicates" },
+      headers: { Prefer: "resolution=ignore-duplicates,return=representation" },
       body: JSON.stringify({
         conversation_id: conversation.id,
         meta_message_id: message.id,
@@ -82,6 +84,7 @@ async function processIncoming(value: Record<string, any>) {
         raw_payload: message,
       }),
     });
+    if (!storedMessages[0]) continue;
     await supabaseRest(`wa_conversations?id=eq.${conversation.id}`, {
       method: "PATCH",
       body: JSON.stringify({
@@ -91,6 +94,14 @@ async function processIncoming(value: Record<string, any>) {
         last_message_at: timestamp.toISOString(),
         customer_window_expires_at: new Date(timestamp.getTime() + 24 * 60 * 60 * 1000).toISOString(),
       }),
+    });
+    after(async () => {
+      await processMessageForTask({
+        storedMessageId: storedMessages[0].id,
+        metaMessageId: message.id,
+        body,
+        contact,
+      });
     });
   }
 }
