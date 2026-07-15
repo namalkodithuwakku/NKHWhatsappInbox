@@ -97,9 +97,10 @@ async function processIncoming(value: Record<string, any>) {
     });
     after(async () => {
       await processMessageForTask({
-        storedMessageId: storedMessages[0].id,
-        metaMessageId: message.id,
-        body,
+      storedMessageId: storedMessages[0].id,
+      metaMessageId: message.id,
+      conversationId: conversation.id,
+      body,
         contact,
       });
     });

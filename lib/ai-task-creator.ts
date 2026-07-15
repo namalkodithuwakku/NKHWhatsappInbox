@@ -2,6 +2,7 @@ import { supabaseRest } from "@/lib/supabase-server";
 
 type ContactContext = {
   id: string;
+  wa_id: string;
   property_id?: string | null;
   property_name?: string | null;
   contact_name?: string | null;
@@ -25,6 +26,7 @@ type TaskDecision = {
   subject: string;
   note: string;
   reason: string;
+  acknowledgement: string;
 };
 
 function outputText(response: Record<string, unknown>) {
@@ -59,6 +61,10 @@ async function classify(message: string, contact: ContactContext, property: Prop
         "Never invent dates, booking IDs, guest names, channels or instructions. Put all useful original details in note.",
         "Use High only when delay could affect a near-term booking, availability, guest or revenue. Use Urgent only when the message clearly indicates immediate action today/now.",
         "The subject must be a short operational headline. The note must clearly describe what staff must do and identify the sender.",
+        "Write acknowledgement only for a created task. It must be a short, natural WhatsApp reply in the property's preferred language.",
+        "If a sender name is available, greet that person by first name. If no name is available, say 'Hello team' or the natural equivalent.",
+        "The acknowledgement must confirm that the task was created and say the team will update the client when it is completed.",
+        "Do not mention AI, confidence, internal systems, buttons, a staff name, or details that were not provided.",
       ].join("\n"),
       input: JSON.stringify({
         property_code: property.client_code,
@@ -84,8 +90,9 @@ async function classify(message: string, contact: ContactContext, property: Prop
               subject: { type: "string" },
               note: { type: "string" },
               reason: { type: "string" },
+              acknowledgement: { type: "string" },
             },
-            required: ["create_task", "confidence", "task_type", "priority", "subject", "note", "reason"],
+            required: ["create_task", "confidence", "task_type", "priority", "subject", "note", "reason", "acknowledgement"],
           },
         },
       },
@@ -120,13 +127,61 @@ async function createDashboardTask(decision: TaskDecision, property: PropertyCon
   return data;
 }
 
+async function sendClientAcknowledgement(input: {
+  conversationId: string;
+  waId: string;
+  text: string;
+}) {
+  const token = process.env.WHATSAPP_ACCESS_TOKEN;
+  const phoneId = process.env.WHATSAPP_PHONE_NUMBER_ID;
+  if (!token || !phoneId) throw new Error("WhatsApp sending credentials are not configured");
+
+  const graphVersion = process.env.WHATSAPP_GRAPH_VERSION || "v23.0";
+  const response = await fetch(`https://graph.facebook.com/${graphVersion}/${phoneId}/messages`, {
+    method: "POST",
+    headers: { Authorization: `Bearer ${token}`, "Content-Type": "application/json" },
+    body: JSON.stringify({
+      messaging_product: "whatsapp",
+      recipient_type: "individual",
+      to: input.waId,
+      type: "text",
+      text: { preview_url: false, body: input.text.trim() },
+    }),
+  });
+  const data = await response.json();
+  if (!response.ok) throw new Error(data?.error?.message || "WhatsApp rejected the acknowledgement");
+
+  const metaMessageId = String(data?.messages?.[0]?.id || "");
+  const now = new Date().toISOString();
+  await supabaseRest("wa_messages", {
+    method: "POST",
+    body: JSON.stringify({
+      conversation_id: input.conversationId,
+      meta_message_id: metaMessageId || null,
+      direction: "outgoing",
+      message_type: "text",
+      body: input.text.trim(),
+      delivery_status: "sent",
+      sent_by: "NKH AI Assistant",
+      meta_timestamp: now,
+      raw_payload: data,
+    }),
+  });
+  await supabaseRest(`wa_conversations?id=eq.${encodeURIComponent(input.conversationId)}`, {
+    method: "PATCH",
+    body: JSON.stringify({ last_message_preview: input.text.trim().slice(0, 180), last_message_at: now }),
+  });
+  return metaMessageId;
+}
+
 export async function processMessageForTask(input: {
   storedMessageId: string;
   metaMessageId: string;
+  conversationId: string;
   body: string;
   contact: ContactContext;
 }) {
-  const { storedMessageId, metaMessageId, body, contact } = input;
+  const { storedMessageId, metaMessageId, conversationId, body, contact } = input;
   if (!body.trim() || !contact.property_id || contact.is_active === false) return;
 
   try {
@@ -158,6 +213,26 @@ export async function processMessageForTask(input: {
         ai_task_payload: { meta_message_id: metaMessageId, decision, dashboard_response: task },
       }),
     });
+
+    try {
+      const replyMessageId = await sendClientAcknowledgement({
+        conversationId,
+        waId: contact.wa_id,
+        text: decision.acknowledgement,
+      });
+      await supabaseRest(`wa_messages?id=eq.${encodeURIComponent(storedMessageId)}`, {
+        method: "PATCH",
+        body: JSON.stringify({ ai_reply_status: "sent", ai_reply_message_id: replyMessageId || null, ai_reply_error: null }),
+      });
+    } catch (replyError) {
+      await supabaseRest(`wa_messages?id=eq.${encodeURIComponent(storedMessageId)}`, {
+        method: "PATCH",
+        body: JSON.stringify({
+          ai_reply_status: "failed",
+          ai_reply_error: replyError instanceof Error ? replyError.message.slice(0, 500) : "Unknown reply error",
+        }),
+      });
+    }
   } catch (error) {
     console.error("WhatsApp AI task creator error", error);
     await supabaseRest(`wa_messages?id=eq.${encodeURIComponent(storedMessageId)}`, {
