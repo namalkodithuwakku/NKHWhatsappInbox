@@ -101,6 +101,9 @@ body{background:#f4f6f4;color:var(--ink);font-family:var(--font-geist-sans),Aria
   .number-grid .prefix-field{grid-column:span 1}
   .contact-actions{margin-left:-16px;margin-right:-16px;padding-left:16px;padding-right:16px}
 }
+<<<<<<< HEAD
 
 /* Inbox role access and admin controls */
 .login-select{display:block;width:100%;height:46px;margin-top:7px;border:1px solid #dfe2df;border-radius:12px;padding:0 13px;background:#fff;color:#303633;outline:0}.login-select:focus{border-color:var(--amber);box-shadow:0 0 0 3px #fff1df}.role-badge{padding:6px 9px;border-radius:8px;background:#eef1ee;color:#59625d;font-size:9px;font-weight:800;letter-spacing:.7px}.contact-action-spacer{flex:1}.contact-actions .delete-property,.danger-zone button{border-color:#efc5c1;background:#fff5f4;color:#a83b32}.danger-zone{border-top:1px solid #f0d5d2;background:#fffafa}.danger-zone p{margin:-5px 0 12px;color:#8b716e;font-size:10px;line-height:1.45}.danger-zone button{width:100%;height:36px;border:1px solid #efc5c1;border-radius:10px;font-size:10px;font-weight:750}
+=======
+>>>>>>> ca9629391a316b7c3a31c127fc87b8e25b301d26

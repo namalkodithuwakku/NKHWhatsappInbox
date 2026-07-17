@@ -7,7 +7,11 @@ type Property = { id?: string; client_code: string; property_name: string; prefe
 
 const emptyProperty = (): Property => ({ client_code: "", property_name: "", preferred_language: "English", client_status: "Active", package_name: "", notes: "", contacts: [{ phone: "", name_prefix: "", contact_name: "", job_position: "", is_active: true, notes: "" }] });
 
+<<<<<<< HEAD
 export default function ContactManager({ role, onClose, onSaved }: { role: "ADMIN" | "TEAM"; onClose: () => void; onSaved: () => void }) {
+=======
+export default function ContactManager({ onClose, onSaved }: { onClose: () => void; onSaved: () => void }) {
+>>>>>>> ca9629391a316b7c3a31c127fc87b8e25b301d26
   const [properties, setProperties] = useState<Property[]>([]);
   const [form, setForm] = useState<Property>(emptyProperty());
   const [search, setSearch] = useState("");
@@ -41,6 +45,7 @@ export default function ContactManager({ role, onClose, onSaved }: { role: "ADMI
     setForm(saved);
   }
 
+<<<<<<< HEAD
   async function deleteProperty() {
     if (role !== "ADMIN" || !form.id) return;
     const confirmation = window.prompt(`Permanently delete ${form.property_name} and its contacts/conversations?\n\nType DELETE to confirm.`);
@@ -52,6 +57,8 @@ export default function ContactManager({ role, onClose, onSaved }: { role: "ADMI
     setForm(emptyProperty()); await load(); onSaved();
   }
 
+=======
+>>>>>>> ca9629391a316b7c3a31c127fc87b8e25b301d26
   return <div className="contact-overlay" role="dialog" aria-modal="true" aria-label="Manage property contacts">
     <div className="contact-modal">
       <header className="contact-modal-head"><div><p>NKH client directory</p><h2>Manage Contacts</h2></div><button onClick={onClose} aria-label="Close">×</button></header>
@@ -62,7 +69,11 @@ export default function ContactManager({ role, onClose, onSaved }: { role: "ADMI
           <div className="numbers-title"><div><h3>WhatsApp numbers</h3><p>Add the people who may contact N K Hotels for this property.</p></div><button type="button" onClick={addNumber}>＋ Add number</button></div>
           <div className="number-list">{form.contacts.map((contact, index) => <section className="number-card" key={contact.id || index}><div className="number-card-head"><div><b>Contact {index + 1}</b><small>WhatsApp contact details</small></div><label className="active-toggle"><input type="checkbox" checked={contact.is_active !== false} onChange={(event) => updateContact(index, { is_active: event.target.checked })} /> Active contact</label></div><div className="number-grid"><label className="phone-field">WhatsApp number<input value={contact.phone || ""} onChange={(event) => updateContact(index, { phone: event.target.value })} placeholder="+94771234567" required /></label><label className="prefix-field">Prefix <span>Optional</span><select value={contact.name_prefix || ""} onChange={(event) => updateContact(index, { name_prefix: event.target.value })}><option value="">No prefix</option><option>Mr</option><option>Ms</option><option>Mrs</option><option>Dr</option><option>Rev</option></select></label><label className="name-field">Contact name <span>Optional</span><input value={contact.contact_name || ""} onChange={(event) => updateContact(index, { contact_name: event.target.value })} placeholder="Ranjith" /></label><label className="position-field">Position <span>Optional</span><input value={contact.job_position || ""} onChange={(event) => updateContact(index, { job_position: event.target.value })} placeholder="Manager" /></label></div>{form.contacts.length > 1 && <button className="remove-number" type="button" onClick={() => removeNumber(index)}>Remove number</button>}</section>)}</div>
           {error && <div className="contact-error">{error}</div>}
+<<<<<<< HEAD
           <footer className="contact-actions">{role === "ADMIN" && form.id && <button className="delete-property" type="button" onClick={deleteProperty} disabled={saving}>Delete property</button>}<span className="contact-action-spacer" /><button type="button" onClick={onClose}>Cancel</button><button className="save-property" disabled={saving}>{saving ? "Saving…" : "Save property contacts"}</button></footer>
+=======
+          <footer className="contact-actions"><button type="button" onClick={onClose}>Cancel</button><button className="save-property" disabled={saving}>{saving ? "Saving…" : "Save property contacts"}</button></footer>
+>>>>>>> ca9629391a316b7c3a31c127fc87b8e25b301d26
         </form>
       </div>
     </div>

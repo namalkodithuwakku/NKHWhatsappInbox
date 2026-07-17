@@ -1,7 +1,12 @@
 import { NextRequest, NextResponse } from "next/server";
+<<<<<<< HEAD
 import { getInboxSession, isInboxAuthenticated } from "@/lib/inbox-auth";
 import { supabaseRest } from "@/lib/supabase-server";
 import { recordInboxAudit } from "@/lib/inbox-audit";
+=======
+import { isInboxAuthenticated } from "@/lib/inbox-auth";
+import { supabaseRest } from "@/lib/supabase-server";
+>>>>>>> ca9629391a316b7c3a31c127fc87b8e25b301d26
 
 type PropertyRow = {
   id: string;
@@ -106,6 +111,7 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ error: error instanceof Error ? error.message : "Unable to save property" }, { status: 500 });
   }
 }
+<<<<<<< HEAD
 
 export async function DELETE(request: NextRequest) {
   const session = await getInboxSession();
@@ -143,3 +149,5 @@ export async function DELETE(request: NextRequest) {
     return NextResponse.json({ error: error instanceof Error ? error.message : "Delete failed" }, { status: 500 });
   }
 }
+=======
+>>>>>>> ca9629391a316b7c3a31c127fc87b8e25b301d26
