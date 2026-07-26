@@ -106,7 +106,12 @@ async function classify(message: string, contact: ContactContext, property: Prop
   return JSON.parse(text) as TaskDecision;
 }
 
-async function createDashboardTask(decision: TaskDecision, property: PropertyContext) {
+async function createDashboardTask(
+  decision: TaskDecision,
+  property: PropertyContext,
+  sourceMessageId: string,
+  conversationId: string,
+) {
   const url = process.env.DASHBOARD_TASK_API_URL;
   const secret = process.env.INBOX_INTEGRATION_SECRET;
   if (!url || !secret) throw new Error("Dashboard task integration is not configured");
@@ -120,6 +125,9 @@ async function createDashboardTask(decision: TaskDecision, property: PropertyCon
       subject: decision.subject,
       note: decision.note,
       priority: decision.priority,
+      sourceMessageId,
+      conversationId,
+      acknowledgementHandledExternally: true,
     }),
   });
   const data = await response.json();
@@ -202,7 +210,7 @@ export async function processMessageForTask(input: {
       return;
     }
 
-    const task = await createDashboardTask(decision, property);
+    const task = await createDashboardTask(decision, property, storedMessageId, conversationId);
     const taskId = String(task.taskId || task.id || task.task?.id || "");
     await supabaseRest(`wa_messages?id=eq.${encodeURIComponent(storedMessageId)}`, {
       method: "PATCH",
