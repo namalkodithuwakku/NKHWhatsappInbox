@@ -59,7 +59,9 @@ export default function Home() {
   const visible = useMemo(() => conversations.filter((item) => {
     const contact = item.contact || {} as Contact;
     const matches = `${contact.profile_name || ""} ${contact.property_name || ""} ${contact.phone || ""}`.toLowerCase().includes(query.toLowerCase());
-    const needsAttention = Boolean(item.attention_reason) || (item.next_action_deadline ? new Date(item.next_action_deadline) < new Date() : false);\n    const categoryMatch = filter === "All" || (filter === "Needs attention" ? needsAttention : filter === "New enquiries" ? item.label === "Lead" : filter === "Current clients" ? item.label === "Existing Client" || item.label === "Client Support" : filter === "Follow-ups" ? item.status === "Follow-up" : filter === "Closed" ? item.status === "Closed" : true);\n    return matches && categoryMatch;
+    const needsAttention = Boolean(item.attention_reason) || (item.next_action_deadline ? new Date(item.next_action_deadline) < new Date() : false);
+const categoryMatch = filter === "All" || (filter === "Needs attention" ? needsAttention : filter === "New enquiries" ? item.label === "Lead" : filter === "Current clients" ? item.label === "Existing Client" || item.label === "Client Support" : filter === "Follow-ups" ? item.status === "Follow-up" : filter === "Closed" ? item.status === "Closed" : true);
+return matches && categoryMatch;
   }), [conversations, filter, query]);
 
   async function login(event: FormEvent) {
@@ -100,7 +102,9 @@ export default function Home() {
   async function deleteConversation() {
     if (!active || role !== "ADMIN") return;
     const title = active.contact?.property_name || active.contact?.profile_name || active.contact?.phone || "this conversation";
-    if (!window.confirm(`Delete the complete conversation with ${title}?\n\nAll messages and internal notes in this conversation will be permanently deleted.`)) return;
+    if (!window.confirm(`Delete the complete conversation with ${title}?
+
+All messages and internal notes in this conversation will be permanently deleted.`)) return;
     const response = await fetch(`/api/inbox/conversations?id=${encodeURIComponent(active.id)}`, { method: "DELETE" });
     const data = await response.json();
     if (!response.ok) { showToast(data.error || "Conversation could not be deleted"); return; }
