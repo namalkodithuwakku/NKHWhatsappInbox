@@ -87,7 +87,7 @@ async function decide(input: {
     method: "POST",
     headers: { Authorization: `Bearer ${apiKey}`, "Content-Type": "application/json" },
     body: JSON.stringify({
-      model: process.env.OPENAI_AUTO_REPLY_MODEL || "gpt-5.6-luna",
+      model: process.env.OPENAI_AUTO_REPLY_MODEL || "gpt-5-mini",
       reasoning: { effort: "medium" },
       store: false,
       instructions: [
@@ -238,7 +238,7 @@ export async function processMessageAutomatically(input: {
           decision.action === "clarify" ? "clarification" :
           decision.action === "escalate" ? "escalation" : "skipped",
         decision: decision.reason,
-        model: process.env.OPENAI_AUTO_REPLY_MODEL || "gpt-5.6-luna",
+        model: process.env.OPENAI_AUTO_REPLY_MODEL || "gpt-5-mini",
         knowledge_entry_ids: decision.knowledge_entry_ids,
         details: { action: decision.action, confidence: decision.confidence, language: decision.language },
       }),
@@ -296,6 +296,7 @@ export async function processMessageAutomatically(input: {
     });
   } catch (error) {
     const errorMessage = error instanceof Error ? error.message.slice(0, 500) : "Automatic reply failed";
+    console.error("NKH automatic reply failed", { conversationId, storedMessageId, metaMessageId, error: errorMessage });
     await supabaseRest("wa_ai_events", {
       method: "POST",
       body: JSON.stringify({
