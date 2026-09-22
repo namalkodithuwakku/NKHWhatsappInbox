@@ -10,6 +10,7 @@ type ContactContext = {
   profile_name?: string | null;
   job_position?: string | null;
   is_active?: boolean | null;
+  client_status?: string | null;
 };
 
 type ConversationRow = {
@@ -99,7 +100,8 @@ async function decide(input: {
         "Do not claim that an operational action is completed merely because a request was received or a task can be created.",
         "Distinguish ANSWER from ACKNOWLEDGEMENT from COMPLETION. Completion requires verified system evidence and is not available in this decision step.",
         "For normal company/service questions, choose answer only when approved knowledge supports the factual parts.",
-        "Only EXISTING CLIENTS may enter the operational task workflow. A new lead, prospect or unlinked enquiry must never create an operational client task.",\n        "For an EXISTING CLIENT with a clear operational instruction such as close rooms, change rates, update availability, reply to a guest, or fix an OTA issue, choose operational_request. Do not promise it is done.",
+        "Only EXISTING CLIENTS may enter the operational task workflow. A new lead, prospect or unlinked enquiry must never create an operational client task.",
+"For an EXISTING CLIENT with a clear operational instruction such as close rooms, change rates, update availability, reply to a guest, or fix an OTA issue, choose operational_request. Do not promise it is done.",
         "If an operational instruction lacks a material property, room, date, booking reference, channel or action detail that cannot be safely inferred from context, choose clarify and ask only the minimum necessary question.",
         "For complaints, sensitive commercial disputes, unclear commitments, unsupported pricing, angry clients, repeated failures, or requests needing management judgment, choose escalate. Acknowledge calmly without admitting fault or promising an outcome.",
         "For sales enquiries, answer useful questions first, then ask the smallest useful next question. Do not interrogate the lead with a long form.",
@@ -113,7 +115,9 @@ async function decide(input: {
         contact: {
           name: input.contact.contact_name || input.contact.profile_name || "",
           property_name: input.contact.property_name || "",
-          job_position: input.contact.job_position || "",\n          client_status: input.contact.client_status || "",\n          is_linked_property: Boolean(input.contact.property_id || input.contact.property_name),
+          job_position: input.contact.job_position || "",
+client_status: input.contact.client_status || "",
+is_linked_property: Boolean(input.contact.property_id || input.contact.property_name),
         },
         recent_conversation: input.history,
         latest_message: input.latestMessage,
