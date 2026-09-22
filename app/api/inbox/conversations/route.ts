@@ -15,9 +15,22 @@ export async function GET() {
 
 export async function PATCH(request: NextRequest) {
   if (!(await isInboxAuthenticated())) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-  const { id, status, assigned_to, label, unread_count, property_name } = await request.json();
+  const { id, status, assigned_to, label, unread_count, property_name, ai_mode } = await request.json();
   if (!id) return NextResponse.json({ error: "Conversation id required" }, { status: 400 });
-  const update = Object.fromEntries(Object.entries({ status, assigned_to, label, unread_count }).filter(([, value]) => value !== undefined));
+  if (ai_mode !== undefined && !["auto", "paused", "human"].includes(ai_mode)) {
+    return NextResponse.json({ error: "Invalid AI mode" }, { status: 400 });
+  }
+  const update = Object.fromEntries(
+    Object.entries({
+      status,
+      assigned_to,
+      label,
+      unread_count,
+      ai_mode,
+      ai_paused_by: ai_mode === "auto" ? null : assigned_to || "NKH Team",
+      ai_paused_at: ai_mode === "auto" ? null : ai_mode !== undefined ? new Date().toISOString() : undefined,
+    }).filter(([, value]) => value !== undefined),
+  );
   try {
     const rows = await supabaseRest<Array<{ contact_id: string }>>(`wa_conversations?id=eq.${encodeURIComponent(id)}&select=contact_id`, {
       method: "PATCH",
