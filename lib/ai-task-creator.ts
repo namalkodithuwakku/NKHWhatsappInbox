@@ -53,7 +53,7 @@ async function classify(message: string, contact: ContactContext, property: Prop
     method: "POST",
     headers: { Authorization: `Bearer ${apiKey}`, "Content-Type": "application/json" },
     body: JSON.stringify({
-      model: process.env.OPENAI_TASK_MODEL || "gpt-5.6-luna",
+      model: process.env.OPENAI_TASK_MODEL || "gpt-5-mini",
       reasoning: { effort: "low" },
       store: false,
       instructions: [
@@ -61,6 +61,7 @@ async function classify(message: string, contact: ContactContext, property: Prop
         "Create a task only when the latest message contains a clear, actionable request.",
         "Do not create tasks for greetings, thanks, confirmations, general questions, vague complaints, casual conversation, or unclear intent.",
         "Understand English, Sinhala, Tamil and Singlish. Examples: 'room close kara' means close room availability and is a Room block task; 'me guest awada?' is a question and is not a task.",
+        "The acknowledgement language must match the sender's latest message: Sinhala script to Sinhala, Tamil to Tamil, English to English, and Romanized Sinhala/Singlish to natural Singlish. If the sender switches language, switch with them.",
         "N K Hotels handles OTA work and travel-agent work. Direct/FIT bookings are hotel-managed, but a clear request to notify or act on one can still become a task.",
         "Never invent dates, booking IDs, guest names, channels or instructions. Put all useful original details in note.",
         "Use High only when delay could affect a near-term booking, availability, guest or revenue. Use Urgent only when the message clearly indicates immediate action today/now.",
@@ -242,7 +243,7 @@ export async function processMessageForTask(input: {
           message_id: storedMessageId,
           event_type: "skipped",
           decision: decision.reason,
-          model: process.env.OPENAI_TASK_MODEL || "gpt-5.6-luna",
+          model: process.env.OPENAI_TASK_MODEL || "gpt-5-mini",
           details: { confidence: decision.confidence, create_task: decision.create_task },
         }),
       }).catch(() => undefined);
@@ -267,6 +268,25 @@ export async function processMessageForTask(input: {
       }),
     }).catch(() => undefined);
     const taskId = String(task.taskId || task.id || task.task?.id || "");
+
+    // Mirror actionable work into the Client Operations Hub. This is intentionally
+    // non-blocking so dashboard task creation remains the source of operational execution.
+    await supabaseRest("wa_client_requests?on_conflict=source_message_id", {
+      method: "POST",
+      headers: { Prefer: "resolution=merge-duplicates" },
+      body: JSON.stringify({
+        conversation_id: conversationId,
+        contact_id: contact.id,
+        property_id: contact.property_id,
+        source_message_id: storedMessageId,
+        dashboard_task_id: taskId || null,
+        request_type: decision.task_type,
+        subject: decision.subject,
+        status: "Open",
+        priority: decision.priority,
+      }),
+    }).catch((error) => console.error("Client hub request mirror unavailable", error));
+
     await supabaseRest(`wa_messages?id=eq.${encodeURIComponent(storedMessageId)}`, {
       method: "PATCH",
       body: JSON.stringify({
