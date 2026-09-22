@@ -15,7 +15,7 @@ export async function GET() {
 
 export async function PATCH(request: NextRequest) {
   if (!(await isInboxAuthenticated())) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-  const { id, status, assigned_to, label, unread_count, property_name, ai_mode } = await request.json();
+  const { id, status, assigned_to, label, unread_count, property_name, ai_mode, next_action, next_action_deadline, attention_reason, outcome } = await request.json();
   if (!id) return NextResponse.json({ error: "Conversation id required" }, { status: 400 });
   if (ai_mode !== undefined && !["auto", "paused", "human"].includes(ai_mode)) {
     return NextResponse.json({ error: "Invalid AI mode" }, { status: 400 });
