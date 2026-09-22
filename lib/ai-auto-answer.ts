@@ -68,10 +68,15 @@ async function recentHistory(conversationId: string) {
 }
 
 async function approvedKnowledge(propertyId?: string | null) {
-  const rows = await supabaseRest<KnowledgeEntry[]>(
-    "nkh_knowledge_entries?approval_status=eq.approved&select=id,scope,property_id,title,content,owner,approval_status,source_url,last_updated_at&order=last_updated_at.desc&limit=80",
-  );
-  return rows.filter((entry) => !entry.property_id || entry.property_id === propertyId);
+  try {
+    const rows = await supabaseRest<KnowledgeEntry[]>(
+      "nkh_knowledge_entries?approval_status=eq.approved&select=id,scope,property_id,title,content,owner,approval_status,source_url,last_updated_at&order=last_updated_at.desc&limit=80",
+    );
+    return rows.filter((entry) => !entry.property_id || entry.property_id === propertyId);
+  } catch (error) {
+    console.error("NKH knowledge lookup unavailable", error);
+    return [];
+  }
 }
 
 async function decide(input: {
@@ -214,13 +219,21 @@ export async function processMessageAutomatically(input: {
   const { storedMessageId, metaMessageId, conversationId, body, contact } = input;
   if (!body.trim() || contact.is_active === false) return;
 
-  const conversations = await supabaseRest<ConversationRow[]>(
-    `wa_conversations?id=eq.${encodeURIComponent(conversationId)}&select=id,ai_mode,assigned_to&limit=1`,
-  );
-  const conversation = conversations[0];
-  if (!conversation || (conversation.ai_mode || "auto") !== "auto") return;
-
   try {
+    let conversation: ConversationRow | undefined;
+    try {
+      const conversations = await supabaseRest<ConversationRow[]>(
+        `wa_conversations?id=eq.${encodeURIComponent(conversationId)}&select=id,ai_mode,assigned_to&limit=1`,
+      );
+      conversation = conversations[0];
+    } catch (error) {
+      console.error("NKH AI-mode lookup unavailable; using automatic mode during rollout", error);
+      const conversations = await supabaseRest<ConversationRow[]>(
+        `wa_conversations?id=eq.${encodeURIComponent(conversationId)}&select=id,assigned_to&limit=1`,
+      );
+      conversation = conversations[0];
+    }
+    if (!conversation || (conversation.ai_mode || "auto") !== "auto") return;
     const [history, knowledge] = await Promise.all([
       recentHistory(conversationId),
       approvedKnowledge(contact.property_id),
@@ -293,7 +306,7 @@ export async function processMessageAutomatically(input: {
         ai_reply_message_id: replyMessageId || null,
         ai_reply_error: null,
       }),
-    });
+    }).catch((error) => console.error("NKH AI reply tracking unavailable", error));
   } catch (error) {
     const errorMessage = error instanceof Error ? error.message.slice(0, 500) : "Automatic reply failed";
     console.error("NKH automatic reply failed", { conversationId, storedMessageId, metaMessageId, error: errorMessage });
