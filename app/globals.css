@@ -367,3 +367,64 @@ button:active{transform:translateY(1px) scale(.985)}
   .workspace:after{content:"";position:fixed;pointer-events:none;width:360px;height:360px;left:18%;bottom:-230px;border-radius:50%;background:radial-gradient(circle,rgba(255,148,44,.11),rgba(255,148,44,0) 70%)}
 }
 @media(prefers-reduced-motion:reduce){button{transition:none}}
+
+
+/* =========================================================
+   NKH BRAND LOCK — Orange + Charcoal + White
+   Also fixes chat scrolling and composer visibility.
+   ========================================================= */
+:root{
+  --wa:#f28a1b;--wa-deep:#d66f08;--wa-dark:#292d2f;
+  --blue:#f28a1b;--violet:#f28a1b;--orange:#f28a1b;
+  --app-bg:#f3f3f2;--panel:#fff;--panel-soft:#f8f8f7;
+  --text:#25292b;--text-2:#555d60;--text-3:#818789;
+  --stroke:#e4e5e4;--danger:#d94f45;
+  --glass-green:linear-gradient(135deg,#ff9d35,#df7208);
+}
+body{background:#f3f3f2;color:#25292b}
+.app-shell{background:radial-gradient(circle at 80% 0%,rgba(242,138,27,.10),transparent 27%),linear-gradient(135deg,#f4f4f3,#fff 55%,#f6f2ed)}
+.rail{background:linear-gradient(180deg,#292d2f,#1d2022);box-shadow:8px 0 32px rgba(25,27,28,.16)}
+.brand-mark span{color:#ff9b32}.rail nav button{color:#aeb2b3}.rail nav button.selected{background:linear-gradient(145deg,#ff9e39,#e7780c);color:#fff;box-shadow:0 8px 22px rgba(226,117,12,.28)}
+.avatar{background:linear-gradient(145deg,#ffab4c,#e87a0e)}
+.primary,.send,.login-button,.contact-actions .save-property{background:linear-gradient(135deg,#ff9d35,#df7208);box-shadow:0 10px 25px rgba(218,111,7,.24),inset 0 1px 0 rgba(255,255,255,.4)}
+.primary:hover,.send:hover,.login-button:hover,.contact-actions .save-property:hover{box-shadow:0 15px 32px rgba(218,111,7,.3),inset 0 1px 0 rgba(255,255,255,.5)}
+.command-status{background:linear-gradient(135deg,#34383a,#202426);box-shadow:0 12px 30px rgba(30,33,34,.2)}.command-status i,.connection i,.dot{background:#f28a1b;box-shadow:0 0 0 5px rgba(242,138,27,.12)}
+.queue-filters button.active{background:linear-gradient(135deg,#373b3d,#222628);color:#fff}
+.conversation.active{background:linear-gradient(110deg,#fff4e8,#fff);border-color:#f2d5b5;box-shadow:0 7px 22px rgba(167,91,16,.08)}.conversation.active:before{background:#f28a1b}
+.contact-avatar,.contact-avatar.xl{background:linear-gradient(145deg,#4a4f51,#292d2f);color:#fff;box-shadow:0 7px 18px rgba(35,39,40,.17)}
+.unread{background:#f28a1b}
+.assistant-pill{background:linear-gradient(145deg,#fff3e4,#ffe5c6);color:#a85608}.signal.ai{background:linear-gradient(145deg,#fff5e9,#ffe8cc);color:#a85a0d}.client-badge{background:linear-gradient(145deg,#fff4e7,#ffe7c9);color:#a8580c}
+.profile-kicker,.reply-mode b{color:#d66f08}
+.hub-summary b{color:#d66f08}
+.message-wrap.team .message,.team .message{background:linear-gradient(145deg,#fff0dd,#ffe5c4);color:#38291a;box-shadow:0 5px 18px rgba(184,99,15,.09),inset 0 1px 0 rgba(255,255,255,.7)}
+.action-card{background:linear-gradient(145deg,#fff7ee,#fff)}
+.compose-row:focus-within{border-color:#e9a258;box-shadow:0 10px 28px rgba(220,116,14,.10),0 0 0 3px rgba(242,138,27,.10),inset 0 1px 0 #fff}
+.ai-controls{background:#faf8f5;border-color:#ebe2d8;color:#2e3234}
+.ai-control-buttons button{color:#4b5052}
+.workspace:before{background:radial-gradient(circle,rgba(242,138,27,.12),rgba(242,138,27,0) 68%)!important}
+.workspace:after{background:radial-gradient(circle,rgba(52,56,58,.07),rgba(52,56,58,0) 70%)!important}
+
+/* Critical layout fix: keep composer visible and messages independently scrollable */
+.workspace{height:100vh;min-height:0;display:flex;flex-direction:column}
+.topbar,.command-strip{flex:0 0 auto}
+.inbox-grid{flex:1;height:auto!important;min-height:0!important}
+.chat-panel{height:100%;min-height:0!important;display:flex!important;flex-direction:column;overflow:hidden}
+.chat-head{flex:0 0 72px}
+.chat-body{flex:1 1 auto;min-height:0!important;overflow-y:auto!important;overflow-x:hidden;overscroll-behavior:contain;scrollbar-gutter:stable;padding-bottom:28px}
+.composer{position:relative!important;bottom:auto!important;flex:0 0 auto;z-index:20;display:block!important;background:rgba(255,255,255,.96);border-top:1px solid #e6e6e5}
+.compose-row{display:flex!important;min-height:54px}
+.compose-row textarea{display:block!important;visibility:visible!important;opacity:1!important;min-height:38px;max-height:120px;color:#292d2f}
+.conversation-list,.details-panel{height:100%;min-height:0;overflow:hidden}.conversation-scroll,.details-panel{overflow-y:auto}
+.details-panel{overflow-y:auto!important}
+
+/* visible premium scrollbar */
+.chat-body{scrollbar-width:thin;scrollbar-color:#c7c9c8 transparent}
+.chat-body::-webkit-scrollbar{width:8px}.chat-body::-webkit-scrollbar-track{background:transparent}.chat-body::-webkit-scrollbar-thumb{background:#c7c9c8;border-radius:999px;border:2px solid transparent;background-clip:padding-box}.chat-body::-webkit-scrollbar-thumb:hover{background:#aeb1b0;background-clip:padding-box}
+
+@media(max-width:760px){
+  .workspace{height:100dvh}.inbox-grid{flex:1;height:auto!important;min-height:0!important}
+  .chat-panel{height:100%!important}.chat-head{flex-basis:64px}
+  .chat-body{flex:1;min-height:0;overflow-y:auto!important;padding-bottom:18px}
+  .composer{flex:0 0 auto!important;padding-bottom:calc(9px + env(safe-area-inset-bottom));visibility:visible!important}
+  .compose-row{min-height:52px}.compose-row textarea{min-height:38px;font-size:16px}
+}
