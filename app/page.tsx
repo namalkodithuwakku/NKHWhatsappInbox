@@ -29,6 +29,7 @@ export default function Home() {
   const [mobileView, setMobileView] = useState<"list" | "chat">("list");
   const [contactsOpen, setContactsOpen] = useState(false);
   const [clientRequests, setClientRequests] = useState<ClientRequest[]>([]);
+  const [allRequests, setAllRequests] = useState<ClientRequest[]>([]);
   const [section, setSection] = useState<"overview" | "tasks" | "inbox" | "clients">("inbox");
   const active = conversations.find((item) => item.id === activeId) ?? null;
   const inboxStats = useMemo(() => ({
@@ -55,6 +56,15 @@ export default function Home() {
     if (response.ok) setMessages(data.messages || []);
   }, []);
 
+  const loadAllRequests = useCallback(async () => {
+    const results = await Promise.all(conversations.map(async (conversation) => {
+      const response = await fetch(`/api/inbox/client-hub?conversation_id=${encodeURIComponent(conversation.id)}`, { cache: "no-store" });
+      const data = await response.json();
+      return response.ok ? (data.requests || []).map((request: ClientRequest) => ({ ...request, conversation_id: conversation.id, property_name: conversation.contact?.property_name || conversation.contact?.profile_name || "WhatsApp client" })) : [];
+    }));
+    setAllRequests(results.flat());
+  }, [conversations]);
+
   const loadClientRequests = useCallback(async (conversationId: string) => {
     const response = await fetch(`/api/inbox/client-hub?conversation_id=${encodeURIComponent(conversationId)}`, { cache: "no-store" });
     const data = await response.json();
@@ -63,6 +73,7 @@ export default function Home() {
 
   useEffect(() => { fetch("/api/inbox/auth/session").then((r) => r.json()).then((data) => { if (data.authenticated) { setRole(data.role); setAuth("in"); } else setAuth("out"); }).catch(() => setAuth("out")); }, []);
   useEffect(() => { if (auth !== "in") return; const initial = window.setTimeout(loadConversations, 0); const timer = window.setInterval(loadConversations, 5000); return () => { window.clearTimeout(initial); window.clearInterval(timer); }; }, [auth, loadConversations]);
+  useEffect(() => { if (section !== "tasks" || auth !== "in") return; loadAllRequests(); }, [section, auth, loadAllRequests]);
   useEffect(() => { if (!activeId || auth !== "in") return; const initial = window.setTimeout(() => { loadMessages(activeId); loadClientRequests(activeId); }, 0); const timer = window.setInterval(() => { loadMessages(activeId); loadClientRequests(activeId); }, 4000); return () => { window.clearTimeout(initial); window.clearInterval(timer); }; }, [activeId, auth, loadMessages, loadClientRequests]);
 
   const visible = useMemo(() => conversations.filter((item) => {
@@ -126,7 +137,7 @@ All messages and internal notes in this conversation will be permanently deleted
   return <main className="app-shell">
     <aside className="rail"><div className="brand-mark"><b>N K</b><span>Hotels</span></div><nav aria-label="Main navigation"><button className={section === "overview" ? "selected" : ""} title="Overview" aria-label="Overview" onClick={() => setSection("overview")}>⌂</button><button className={section === "tasks" ? "selected" : ""} title="Tasks" aria-label="Tasks" onClick={() => setSection("tasks")}>✓</button><button className={section === "inbox" ? "selected" : ""} title="WhatsApp Inbox" aria-label="WhatsApp Inbox" onClick={() => setSection("inbox")}>✦</button><button className={section === "clients" ? "selected" : ""} title="Clients" aria-label="Clients" onClick={() => { setSection("clients"); setContactsOpen(true); }}>♙</button></nav><button className="avatar" onClick={logout} title="Sign out">NK</button></aside>
     <section className="workspace"><header className="topbar"><div><p>N K Hotels · Client Operations</p><h1>{section === "overview" ? "Operations Overview" : section === "tasks" ? "Task Center" : section === "clients" ? "Client Directory" : "Unified Inbox"}</h1></div><div className="top-actions"><span className="role-badge">{role}</span><span className="connection"><i /> Connected</span><button className="ghost" onClick={logout}>Sign out</button><button className="primary" onClick={() => setContactsOpen(true)}>＋ Manage contacts</button></div></header>
-      {section !== "inbox" && <div className="section-view"><div className="section-view-card"><span>{section === "overview" ? "⌂" : section === "tasks" ? "✓" : "♙"}</span><h2>{section === "overview" ? "Operations Overview" : section === "tasks" ? "Task Center" : "Client Directory"}</h2><p>{section === "overview" ? "Your live WhatsApp operations at a glance." : section === "tasks" ? "Operational requests created from client conversations are visible inside each client workspace." : "Manage hotel properties and their authorized WhatsApp contacts."}</p>{section === "overview" && <div className="section-stats"><b>{inboxStats.unread}<small>Unread</small></b><b>{inboxStats.attention}<small>Attention</small></b><b>{inboxStats.leads}<small>Leads</small></b><b>{inboxStats.followups}<small>Follow-ups</small></b></div>}{section === "tasks" && <button className="primary" onClick={() => { setSection("inbox"); setFilter("Current clients"); }}>Open client operations</button>}{section === "clients" && <button className="primary" onClick={() => setContactsOpen(true)}>Manage contacts</button>}</div></div>}
+      {section !== "inbox" && <div className="section-view">{section === "tasks" ? <div className="task-workspace"><div className="task-toolbar"><div><h2>Operational Tasks</h2><p>Live requests created from client WhatsApp conversations.</p></div><div className="task-counts"><b>{allRequests.filter(r => r.status !== "Completed" && r.status !== "Cancelled").length}<small>Active</small></b><b>{allRequests.filter(r => r.priority === "Urgent" && r.status !== "Completed").length}<small>Urgent</small></b><b>{allRequests.filter(r => r.status === "Completed").length}<small>Completed</small></b></div></div><div className="task-board">{(["Open","In progress","Waiting","Completed"] as const).map(status => <section className="task-column" key={status}><header><b>{status}</b><span>{allRequests.filter(r => r.status === status).length}</span></header><div>{allRequests.filter(r => r.status === status).length === 0 ? <p className="task-empty">No {status.toLowerCase()} tasks</p> : allRequests.filter(r => r.status === status).map(request => <button className="task-card" key={request.id} onClick={() => { const cid = (request as ClientRequest & {conversation_id?:string}).conversation_id; if (cid) { setActiveId(cid); setSection("inbox"); } }}><div><span className={`task-priority ${request.priority.toLowerCase()}`}>{request.priority}</span><small>{(request as ClientRequest & {property_name?:string}).property_name}</small></div><strong>{request.subject}</strong><p>{request.request_type}</p>{request.assigned_to && <footer>Assigned · {request.assigned_to}</footer>}</button>)}</div></section>)}</div></div> : <div className="section-view-card"><span>{section === "overview" ? "⌂" : "♙"}</span><h2>{section === "overview" ? "Operations Overview" : "Client Directory"}</h2><p>{section === "overview" ? "Your live WhatsApp operations at a glance." : "Manage hotel properties and their authorized WhatsApp contacts."}</p>{section === "overview" && <div className="section-stats"><b>{inboxStats.unread}<small>Unread</small></b><b>{inboxStats.attention}<small>Attention</small></b><b>{inboxStats.leads}<small>Leads</small></b><b>{inboxStats.followups}<small>Follow-ups</small></b></div>}{section === "clients" && <button className="primary" onClick={() => setContactsOpen(true)}>Manage contacts</button>}</div>}</div>}
       <div className={section === "inbox" ? "" : "section-hidden"}><div className="command-strip">
         <div className="command-metric"><span>Unread</span><b>{inboxStats.unread}</b></div>
         <div className="command-metric urgent"><span>Needs attention</span><b>{inboxStats.attention}</b></div>
