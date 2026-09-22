@@ -241,7 +241,25 @@ export async function processMessageAutomatically(input: {
     }).catch(() => undefined);
 
     if (decision.action === "operational_request") {
+      const clientStatus = (contact.client_status || "").toLowerCase();
+      const isExistingClient = clientStatus.includes("client") || clientStatus.includes("active");
+      const isLinkedClient = isExistingClient && Boolean(contact.property_id || contact.property_name);
+
+      if (!isLinkedClient) {
+        await supabaseRest(`wa_conversations?id=eq.${encodeURIComponent(conversationId)}`, {
+          method: "PATCH",
+          body: JSON.stringify({ label: "Lead", status: "Open", next_action: "Qualify new enquiry" }),
+        });
+        const leadReply = "Thanks for contacting N K Hotels. I can help with your hotel enquiry. Please share your property name and location, and briefly tell me what you need help with.";
+        await sendReply(conversationId, contact.wa_id, leadReply);
+        return;
+      }
+
       await processMessageForTask(input);
+      await supabaseRest(`wa_conversations?id=eq.${encodeURIComponent(conversationId)}`, {
+        method: "PATCH",
+        body: JSON.stringify({ label: "Existing Client", next_action: "Operational task created — awaiting completion" }),
+      });
       return;
     }
 
