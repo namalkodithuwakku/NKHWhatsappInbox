@@ -184,3 +184,102 @@ body{background:radial-gradient(circle at 20% 0%,#fff7ed 0,transparent 28%),var(
 .hub-request b { font-size: 12px; line-height: 1.35; }
 .hub-request span { font-size: 10px; opacity: .62; }
 .hub-request strong { flex: 0 0 auto; font-size: 10px; font-weight: 700; padding: 4px 7px; border-radius: 999px; background: rgba(42,157,92,.12); }
+
+
+/* =========================================================
+   NKH SUPER MESSENGER v3
+   High-visibility global messaging workspace
+   ========================================================= */
+:root{
+  --wa:#25d366;--wa-deep:#008069;--wa-dark:#075e54;
+  --blue:#1687ff;--violet:#6d5dfc;--orange:#ff8a1f;
+  --app-bg:#eef3f1;--panel:#ffffff;--panel-soft:#f7faf9;
+  --text:#14211c;--text-2:#53625b;--text-3:#7b8982;
+  --stroke:#e2e9e5;--danger:#df4f45;
+}
+html,body{height:100%}
+body{font-size:15px;color:var(--text);background:var(--app-bg)}
+.app-shell{height:100vh;min-height:720px;background:linear-gradient(135deg,#eef5f2 0%,#f7f8fb 54%,#fff5e9 100%);overflow:hidden}
+
+/* navigation */
+.rail{width:76px;padding:20px 10px;background:linear-gradient(180deg,#09271f 0%,#071b16 100%);gap:30px;box-shadow:8px 0 32px rgba(5,34,25,.14);z-index:5}
+.brand-mark b{font-size:21px}.brand-mark span{font-size:9px;color:#61e5a5}
+.rail nav{gap:10px}.rail nav button{width:50px;height:50px;border-radius:16px;font-size:21px;color:#8ca99e}
+.rail nav button:hover{background:rgba(255,255,255,.08);color:#fff}
+.rail nav button.selected{background:linear-gradient(145deg,#29d977,#17b965);color:#fff;box-shadow:0 8px 22px rgba(37,211,102,.24)}
+.avatar{width:42px;height:42px;background:linear-gradient(145deg,#ffac4f,#ff8120);color:#fff}
+
+/* workspace + header */
+.workspace{padding:0 18px 18px;overflow:hidden}
+.topbar{height:76px;padding:0 4px}.topbar p{font-size:11px;font-weight:800;color:#6d7d75;letter-spacing:1.2px}.topbar h1{font-size:28px;font-weight:800;letter-spacing:-.8px;color:#102019}
+.top-actions{gap:9px}.role-badge{font-size:10px;padding:7px 10px}.connection{font-size:12px;padding:9px 12px;background:#fff;border:1px solid var(--stroke)}
+.ghost,.primary{height:42px;font-size:13px;border-radius:13px}.primary{background:linear-gradient(135deg,#19b866,#27d578);border:0;box-shadow:0 8px 22px rgba(25,184,102,.22)}
+
+/* command cards */
+.command-strip{height:74px;gap:10px;margin-bottom:10px}.command-metric,.command-status{border:1px solid rgba(255,255,255,.9);border-radius:18px;box-shadow:0 8px 28px rgba(24,52,41,.07)}
+.command-metric{min-width:125px;padding:12px 16px}.command-metric span{font-size:10px;color:#718079}.command-metric b{font-size:25px;font-weight:800}.command-metric.urgent{background:#fff7f5}.command-metric.urgent b{color:#d94e43}
+.command-status{min-width:290px;background:linear-gradient(135deg,#0a3227,#11513f);padding:12px 17px}.command-status b{font-size:13px}.command-status span{font-size:10px;color:#b9d1c7}.command-status i{background:#32e483}
+
+/* main messenger shell */
+.inbox-grid{height:calc(100vh - 178px);min-height:540px;grid-template-columns:minmax(320px,360px) minmax(500px,1fr) minmax(310px,360px);border-radius:22px;background:#fff;border:1px solid rgba(221,231,226,.9);box-shadow:0 22px 65px rgba(22,53,41,.12)}
+.conversation-list{background:#fff;border-right:1px solid var(--stroke)}.list-title{height:62px;padding:0 18px}.list-title b{font-size:17px}.list-title span{font-size:11px;margin-top:2px}.list-title button{width:34px;height:34px;font-size:18px}
+.list-tools{padding:14px 14px 12px}.search{height:46px;border-radius:14px;background:#f1f5f3}.search input{font-size:14px}.search span{font-size:18px}
+.filters{gap:6px;margin-top:12px}.filters button{font-size:11px;padding:8px 11px;border-radius:999px}.queue-filters button{border:1px solid #e2e9e5}.queue-filters button.active{background:linear-gradient(135deg,#07836a,#16a873);color:#fff;border-color:transparent}
+.conversation-scroll{height:calc(100% - 130px);padding:5px 7px 12px}.conversation{min-height:91px;margin:3px 0;padding:14px 12px;border-radius:15px;gap:12px}.conversation:hover{background:#f5faf7}.conversation.active{background:linear-gradient(110deg,#eafaf2,#f7fffb);border:1px solid #ccebdd;box-shadow:0 5px 18px rgba(18,122,82,.08)}
+.conversation.active:before{left:0;top:17px;bottom:auto;width:4px;height:48px;background:#17b96a}
+.contact-avatar{width:48px;height:48px;border-radius:50%;background:linear-gradient(145deg,#0a806b,#22bd7b);font-size:14px;box-shadow:0 4px 12px rgba(0,128,105,.14)}
+.contact-avatar.large{width:50px;height:50px}.contact-avatar.xl{width:72px;height:72px;border-radius:50%;font-size:20px;background:linear-gradient(145deg,#0b806b,#29c886);color:#fff}
+.conversation-copy strong{font-size:14px;font-weight:800;color:#17241e}.conversation-copy time{font-size:11px}.conversation-copy p{font-size:11px;margin:5px 0}.conversation-copy small{font-size:13px;line-height:1.4;color:#56645d}.conversation-signals{margin-top:7px}.signal{height:21px;font-size:9px;padding:0 8px}.unread{width:22px;height:22px;font-size:11px;background:#18bd6c}
+
+/* chat: familiar messenger feel */
+.chat-panel{background:#eef4f1;border-right:1px solid var(--stroke)}
+.chat-head{height:72px;flex:0 0 72px;padding:0 20px;background:rgba(255,255,255,.97);box-shadow:0 2px 12px rgba(22,53,41,.045)}
+.chat-head h2{font-size:17px;font-weight:800;margin-bottom:4px}.chat-head p{font-size:12px;color:#6e7c75}
+.assistant-pill{height:32px;padding:0 12px;font-size:10px;background:#e8f9f0;color:#08764d}.circle{width:38px;height:38px;border-radius:50%;font-size:15px}
+.chat-body{padding:28px 34px;background-color:#edf4f0;background-image:linear-gradient(rgba(237,244,240,.9),rgba(237,244,240,.9)),radial-gradient(#b9c9c1 1px,transparent 1px);background-size:auto,22px 22px}
+.day-label{font-size:10px;font-weight:700;color:#65756d;background:rgba(255,255,255,.78);box-shadow:0 2px 8px rgba(30,60,48,.05)}
+.message-wrap{max-width:min(74%,650px);margin-bottom:13px}.sender{font-size:10px}
+.message{font-size:14px;line-height:1.55;padding:11px 14px 9px;border-radius:8px 18px 18px 18px;box-shadow:0 2px 7px rgba(26,56,44,.08);white-space:pre-wrap}
+.message-wrap.client .message{background:#fff}.message-wrap.team .message{background:#d8f8e7;color:#173c2b;border-radius:18px 8px 18px 18px}
+.message time{font-size:9px;color:#74827b}.team .message time{color:#55836d}
+.attention-banner{font-size:12px;padding:12px 15px;background:#fff5f2}
+.composer{padding:10px 16px 14px;background:#fff;box-shadow:0 -6px 24px rgba(24,52,41,.06)}.reply-mode{font-size:10px}.reply-mode b{color:#07836a}
+.quick-actions{gap:7px;padding:5px 0 9px}.quick-actions button{font-size:10px;padding:7px 11px;background:#f5f8f6}
+.compose-row{padding:6px 7px;border:1px solid #dce6e1;border-radius:22px;background:#f6f9f7;align-items:center}.compose-row textarea{font-size:14px;min-height:34px;padding:8px 9px;background:transparent!important;border:0!important;box-shadow:none!important}.attach,.send{width:39px;height:39px;border-radius:50%;font-size:17px}.attach{background:#e9efec}.send{background:linear-gradient(145deg,#19c56f,#079b58);box-shadow:0 6px 15px rgba(13,164,91,.22)}
+
+/* right information rail */
+.details-panel{background:#fbfdfc;border-left:0}.profile-kicker{font-size:9px;padding:17px 18px 3px;color:#07836a}.client-hero{padding:14px 20px 20px}.client-hero h3{font-size:18px;margin:12px 0 4px}.client-hero p{font-size:12px}.client-badge{font-size:10px;padding:6px 11px;background:#e6f8ef;color:#08744d}
+.detail-section{margin:0 12px 11px;padding:15px;border:1px solid #e3ebe7;border-radius:16px;background:#fff;box-shadow:0 3px 12px rgba(22,53,41,.025)}.detail-section h4{font-size:13px;margin-bottom:13px}.detail-section label{font-size:11px;color:#617068}.detail-section select,.detail-input{height:40px;font-size:12px;border-radius:11px}.detail-section dl div{font-size:11px}.notes textarea{font-size:12px}
+.ai-controls{padding:13px;border:1px solid #dce9e3;background:#f5faf7;color:#20332a}.ai-controls span{font-size:11px}.ai-control-buttons button{font-size:10px;background:#fff;border-color:#d9e6df;color:#2f4a3d}
+.hub-summary{font-size:13px}.hub-summary b{font-size:20px;color:#07836a}.hub-request{padding:11px;border-radius:12px;background:#f7faf8}.hub-request b{font-size:12px}.hub-request span,.hub-request strong{font-size:9px}
+.action-card{background:linear-gradient(145deg,#f5fbf8,#fff);box-shadow:none}.toast{font-size:13px;border-radius:14px;background:#112a21}
+
+/* larger desktop readability */
+@media(min-width:1500px){
+  .workspace{padding-left:24px;padding-right:24px}
+  .inbox-grid{grid-template-columns:380px minmax(600px,1fr) 380px}
+  .conversation-copy strong{font-size:15px}.conversation-copy small{font-size:13px}
+  .message{font-size:15px}.details-panel{font-size:13px}
+}
+
+/* tablet */
+@media(max-width:1250px){
+  .inbox-grid{grid-template-columns:320px minmax(440px,1fr)}
+  .details-panel{display:none}
+  .command-status{display:none}
+}
+
+/* mobile: Messenger/WhatsApp style full-screen navigation */
+@media(max-width:760px){
+  body{font-size:15px}.app-shell{min-height:100dvh;height:100dvh}.workspace{padding:0;background:#fff}
+  .topbar{height:64px;padding:0 14px}.topbar p{font-size:9px}.topbar h1{font-size:21px}
+  .command-strip{height:58px;padding:5px 8px;margin:0;background:#f6f9f7}.command-metric{min-width:96px;border-radius:14px;padding:7px 11px}.command-metric span{font-size:9px}.command-metric b{font-size:19px}
+  .inbox-grid{height:calc(100dvh - 122px);border-radius:0;border:0;box-shadow:none}
+  .list-title{height:56px}.list-title b{font-size:18px}.list-tools{padding-top:10px}.search{height:45px}.search input{font-size:14px}
+  .conversation-scroll{height:calc(100% - 126px)}.conversation{min-height:88px}.contact-avatar{width:50px;height:50px}
+  .conversation-copy strong{font-size:15px}.conversation-copy small{font-size:13px}
+  .chat-head{height:64px;flex-basis:64px;padding:0 10px}.chat-head h2{font-size:15px}.chat-head p{font-size:10px}.assistant-pill{display:none}
+  .chat-body{padding:16px 11px}.message-wrap{max-width:87%}.message{font-size:14px;padding:10px 12px 8px}
+  .composer{padding:8px 8px calc(9px + env(safe-area-inset-bottom))}.quick-actions{overflow-x:auto}.quick-actions button{white-space:nowrap}
+  .compose-row{border-radius:24px}.compose-row textarea{font-size:16px}
+}
