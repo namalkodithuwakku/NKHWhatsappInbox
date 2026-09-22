@@ -36,11 +36,16 @@ export async function PATCH(request: NextRequest) {
     }).filter(([, value]) => value !== undefined),
   );
   try {
-    const rows = await supabaseRest<Array<{ contact_id: string }>>(`wa_conversations?id=eq.${encodeURIComponent(id)}&select=contact_id`, {
-      method: "PATCH",
-      headers: { Prefer: "return=representation" },
-      body: JSON.stringify(update),
-    });
+    let rows: Array<{ contact_id: string }> = [];
+    if (Object.keys(update).length > 0) {
+      rows = await supabaseRest<Array<{ contact_id: string }>>(`wa_conversations?id=eq.${encodeURIComponent(id)}&select=contact_id`, {
+        method: "PATCH",
+        headers: { Prefer: "return=representation" },
+        body: JSON.stringify(update),
+      });
+    } else {
+      rows = await supabaseRest<Array<{ contact_id: string }>>(`wa_conversations?id=eq.${encodeURIComponent(id)}&select=contact_id`);
+    }
     if (property_name !== undefined && rows[0]?.contact_id) {
       await supabaseRest(`wa_contacts?id=eq.${rows[0].contact_id}`, { method: "PATCH", body: JSON.stringify({ property_name }) });
     }
