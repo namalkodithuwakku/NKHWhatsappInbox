@@ -109,8 +109,7 @@ async function decide(input: {
         "Do not expose private information belonging to another client or property.",
         "If approved knowledge does not support a factual NKH claim, clarify or escalate rather than guessing.",
         "Keep routine replies usually under 90 words; complex sales explanations may be longer when useful.",
-      ].join("
-"),
+      ].join("\n"),
       input: JSON.stringify({
         contact: {
           name: input.contact.contact_name || input.contact.profile_name || "",
