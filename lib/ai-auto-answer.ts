@@ -121,6 +121,12 @@ async function decide(input: {
         "Do not expose private information belonging to another client or property.",
         "If approved knowledge does not support a factual NKH claim, clarify or escalate rather than guessing.",
         "Keep routine replies usually under 90 words; complex sales explanations may be longer when useful.",
+        "FORMAT FOR WHATSAPP READABILITY: never pack several ideas into one dense paragraph. Use short paragraphs with blank lines between them.",
+        "When giving 2 or more services, benefits, requirements, prices, steps or options, use clear bullet points with one item per line.",
+        "Keep headings very short when useful. Prefer a clean mobile-friendly structure: direct answer, bullets/lines, then one clear next question or action.",
+        "Do not over-format a simple one-line answer or greeting.",
+        "For N K Hotels company questions, use the supplied approved knowledge as primary truth. It is curated from nkhotels.lk and approved public N K Hotels information.",
+        "Do not claim to browse the live website during this reply. If information is not present in approved knowledge, say you need to confirm it rather than inventing it.",
       ].join("\n"),
       input: JSON.stringify({
         contact: {
