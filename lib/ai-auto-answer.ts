@@ -104,6 +104,7 @@ async function decide(input: {
         "Never invent a price, discount, guarantee, availability, deadline, booking status, task status, OTA action, refund, concession, contract term or commitment.",
         "Do not claim that an operational action is completed merely because a request was received or a task can be created.",
         "Distinguish ANSWER from ACKNOWLEDGEMENT from COMPLETION. Completion requires verified system evidence and is not available in this decision step.",
+        "For greetings and conversational openers such as Hi, Hello, Good morning or Ayubowan, always choose answer and reply naturally even when no knowledge entry is needed.",
         "For normal company/service questions, choose answer only when approved knowledge supports the factual parts.",
         "Only EXISTING CLIENTS may enter the operational task workflow. A new lead, prospect or unlinked enquiry must never create an operational client task.",
 "For an EXISTING CLIENT with a clear operational instruction such as close rooms, change rates, update availability, reply to a guest, or fix an OTA issue, choose operational_request. Do not promise it is done.",
@@ -293,10 +294,18 @@ export async function processMessageAutomatically(input: {
 
     const shouldReply =
       decision.action !== "no_reply" &&
-      decision.reply.trim().length > 0 &&
-      decision.confidence >= (decision.action === "answer" ? 0.78 : 0.65);
+      decision.reply.trim().length > 0;
 
-    if (!shouldReply) return;
+    if (!shouldReply) {
+      console.log("NKH assistant intentionally sent no reply", {
+        conversationId,
+        storedMessageId,
+        action: decision.action,
+        confidence: decision.confidence,
+        reason: decision.reason,
+      });
+      return;
+    }
 
     const replyMessageId = await sendReply(conversationId, contact.wa_id, decision.reply);
     await supabaseRest(`wa_messages?id=eq.${encodeURIComponent(storedMessageId)}`, {
