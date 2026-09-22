@@ -2,7 +2,7 @@
 import { createHmac, timingSafeEqual } from "node:crypto";
 import { after, NextRequest, NextResponse } from "next/server";
 import { supabaseRest } from "@/lib/supabase-server";
-import { processMessageForTask } from "@/lib/ai-task-creator";
+import { processMessageAutomatically } from "@/lib/ai-auto-answer";
 
 type ContactRow = { id: string; wa_id: string; phone: string; profile_name?: string | null; property_name?: string | null; property_id?: string | null; contact_name?: string | null; job_position?: string | null; is_active?: boolean | null };
 type ConversationRow = { id: string; unread_count: number };
@@ -96,7 +96,7 @@ async function processIncoming(value: Record<string, any>) {
       }),
     });
     after(async () => {
-      await processMessageForTask({
+      await processMessageAutomatically({
       storedMessageId: storedMessages[0].id,
       metaMessageId: message.id,
       conversationId: conversation.id,

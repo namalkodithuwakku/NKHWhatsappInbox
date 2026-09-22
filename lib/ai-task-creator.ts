@@ -18,6 +18,10 @@ type PropertyContext = {
   client_status: string;
 };
 
+type ConversationControl = {
+  ai_mode?: "auto" | "paused" | "human" | null;
+};
+
 type TaskDecision = {
   create_task: boolean;
   confidence: number;
@@ -193,6 +197,30 @@ export async function processMessageForTask(input: {
   if (!body.trim() || !contact.property_id || contact.is_active === false) return;
 
   try {
+    const controls = await supabaseRest<ConversationControl[]>(
+      `wa_conversations?id=eq.${encodeURIComponent(conversationId)}&select=ai_mode&limit=1`,
+    );
+    const aiMode = controls[0]?.ai_mode || "auto";
+    if (aiMode !== "auto") {
+      await supabaseRest(`wa_messages?id=eq.${encodeURIComponent(storedMessageId)}`, {
+        method: "PATCH",
+        body: JSON.stringify({
+          ai_task_status: "not_required",
+          ai_task_reason: `AI processing skipped because conversation mode is ${aiMode}`,
+        }),
+      });
+      await supabaseRest("wa_ai_events", {
+        method: "POST",
+        body: JSON.stringify({
+          conversation_id: conversationId,
+          message_id: storedMessageId,
+          event_type: "skipped",
+          decision: `conversation_mode:${aiMode}`,
+          details: { meta_message_id: metaMessageId },
+        }),
+      }).catch(() => undefined);
+      return;
+    }
     const properties = await supabaseRest<PropertyContext[]>(
       `nkh_properties?id=eq.${encodeURIComponent(contact.property_id)}&select=client_code,property_name,preferred_language,client_status`,
     );
@@ -207,10 +235,37 @@ export async function processMessageForTask(input: {
         method: "PATCH",
         body: JSON.stringify({ ai_task_status: "not_required", ai_task_reason: decision.reason }),
       });
+      await supabaseRest("wa_ai_events", {
+        method: "POST",
+        body: JSON.stringify({
+          conversation_id: conversationId,
+          message_id: storedMessageId,
+          event_type: "skipped",
+          decision: decision.reason,
+          model: process.env.OPENAI_TASK_MODEL || "gpt-5.6-luna",
+          details: { confidence: decision.confidence, create_task: decision.create_task },
+        }),
+      }).catch(() => undefined);
       return;
     }
 
     const task = await createDashboardTask(decision, property, storedMessageId, conversationId);
+    await supabaseRest("wa_ai_events", {
+      method: "POST",
+      body: JSON.stringify({
+        conversation_id: conversationId,
+        message_id: storedMessageId,
+        event_type: "task_created",
+        decision: decision.reason,
+        model: process.env.OPENAI_TASK_MODEL || "gpt-5.6-luna",
+        details: {
+          task_type: decision.task_type,
+          priority: decision.priority,
+          subject: decision.subject,
+          confidence: decision.confidence,
+        },
+      }),
+    }).catch(() => undefined);
     const taskId = String(task.taskId || task.id || task.task?.id || "");
     await supabaseRest(`wa_messages?id=eq.${encodeURIComponent(storedMessageId)}`, {
       method: "PATCH",
