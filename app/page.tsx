@@ -53,7 +53,9 @@ export default function Home() {
   const visible = useMemo(() => conversations.filter((item) => {
     const contact = item.contact || {} as Contact;
     const matches = `${contact.profile_name || ""} ${contact.property_name || ""} ${contact.phone || ""}`.toLowerCase().includes(query.toLowerCase());
-    const needsAttention = Boolean(item.attention_reason) || (item.next_action_deadline ? new Date(item.next_action_deadline) < new Date() : false);\n    const categoryMatch = filter === "All" || (filter === "Needs attention" ? needsAttention : filter === "New enquiries" ? item.label === "Lead" : filter === "Current clients" ? item.label === "Existing Client" || item.label === "Client Support" : filter === "Follow-ups" ? item.status === "Follow-up" : filter === "Closed" ? item.status === "Closed" : true);\n    return matches && categoryMatch;
+    const needsAttention = Boolean(item.attention_reason) || (item.next_action_deadline ? new Date(item.next_action_deadline) < new Date() : false);
+    const categoryMatch = filter === "All" || (filter === "Needs attention" ? needsAttention : filter === "New enquiries" ? item.label === "Lead" : filter === "Current clients" ? item.label === "Existing Client" || item.label === "Client Support" : filter === "Follow-ups" ? item.status === "Follow-up" : filter === "Closed" ? item.status === "Closed" : true);
+    return matches && categoryMatch;
   }), [conversations, filter, query]);
 
   async function login(event: FormEvent) {
