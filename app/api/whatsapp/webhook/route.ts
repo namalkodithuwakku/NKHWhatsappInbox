@@ -4,7 +4,7 @@ import { after, NextRequest, NextResponse } from "next/server";
 import { supabaseRest } from "@/lib/supabase-server";
 import { processMessageAutomatically } from "@/lib/ai-auto-answer";
 
-type ContactRow = { id: string; wa_id: string; phone: string; profile_name?: string | null; property_name?: string | null; property_id?: string | null; contact_name?: string | null; job_position?: string | null; is_active?: boolean | null };
+type ContactRow = { id: string; wa_id: string; phone: string; profile_name?: string | null; property_name?: string | null; property_id?: string | null; contact_name?: string | null; job_position?: string | null; is_active?: boolean | null; client_status?: string | null };
 type ConversationRow = { id: string; unread_count: number };
 type StoredMessageRow = { id: string };
 
@@ -40,9 +40,22 @@ function messageBody(message: Record<string, any>) {
 }
 
 async function upsertContact(waId: string, profileName?: string) {
-  const rows = await supabaseRest<ContactRow[]>("wa_contacts?on_conflict=wa_id", {
+  const existing = await supabaseRest<ContactRow[]>(
+    `wa_contacts?wa_id=eq.${encodeURIComponent(waId)}&select=*&limit=1`,
+  );
+  if (existing[0]) {
+    if (profileName && profileName !== existing[0].profile_name) {
+      await supabaseRest(`wa_contacts?id=eq.${encodeURIComponent(existing[0].id)}`, {
+        method: "PATCH",
+        body: JSON.stringify({ profile_name: profileName }),
+      });
+      return { ...existing[0], profile_name: profileName };
+    }
+    return existing[0];
+  }
+  const rows = await supabaseRest<ContactRow[]>("wa_contacts", {
     method: "POST",
-    headers: { Prefer: "resolution=merge-duplicates,return=representation" },
+    headers: { Prefer: "return=representation" },
     body: JSON.stringify({ wa_id: waId, phone: waId, profile_name: profileName || null }),
   });
   return rows[0];
