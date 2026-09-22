@@ -27,8 +27,12 @@ export async function PATCH(request: NextRequest) {
       label,
       unread_count,
       ai_mode,
-      ai_paused_by: ai_mode === "auto" ? null : assigned_to || "NKH Team",
-      ai_paused_at: ai_mode === "auto" ? null : ai_mode !== undefined ? new Date().toISOString() : undefined,
+      ai_paused_by: ai_mode === undefined ? undefined : ai_mode === "auto" ? null : assigned_to || "NKH Team",
+      ai_paused_at: ai_mode === undefined ? undefined : ai_mode === "auto" ? null : new Date().toISOString(),
+      next_action,
+      next_action_deadline,
+      attention_reason,
+      outcome,
     }).filter(([, value]) => value !== undefined),
   );
   try {
