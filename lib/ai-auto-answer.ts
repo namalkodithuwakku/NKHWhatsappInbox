@@ -10,6 +10,7 @@ type ContactContext = {
   profile_name?: string | null;
   job_position?: string | null;
   is_active?: boolean | null;
+  client_status?: string | null;
 };
 
 type ConversationRow = {
